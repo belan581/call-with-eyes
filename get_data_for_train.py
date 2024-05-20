@@ -1,3 +1,4 @@
+import time
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.boxlayout import BoxLayout
@@ -5,8 +6,19 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivymd.app import App
 from kivymd.uix.gridlayout import GridLayout
+import threading
 
+from eyes_move_detection import eyesMoveDetection
 from tools import flip_camera, start_camera
+
+eyes_gesture = [
+    (0, "look_down"),
+    (1, "look_up"),
+    (2, "close_eyes"),
+    (3, "no_action"),
+]
+
+FREQ = 1.0 / 20.0
 
 
 class MainApp(App):
@@ -22,20 +34,17 @@ class MainApp(App):
             self.image,
         )
         self.buttons_layout = BoxLayout(size_hint_y=0.2)
-        self.btn1 = Button(text="Mirar abajo")
-        self.btn2 = Button(text="Mirar arriba")
-        self.btn3 = Button(text="Cerrar ojos")
-        self.btn4 = Button(text="Sin accion")
-        self.buttons_layout.add_widget(self.btn1)
-        self.buttons_layout.add_widget(self.btn2)
-        self.buttons_layout.add_widget(self.btn3)
-        self.buttons_layout.add_widget(self.btn4)
+        for a in eyes_gesture:
+            self.btn = Button(text=a[1])
+            self.btn.bind(on_press=lambda x: self.capture_thread(a[0]))
+            self.buttons_layout.add_widget(self.btn)
         layout.add_widget(self.buttons_layout)
         # Inicializar el video en hilo
         self.capture = start_camera(
             video_number=0, frame_rate=20, video_res=[1280, 720]
         )
-        Clock.schedule_interval(self.load_video_thread, 1.0 / 20.0)
+        Clock.schedule_interval(self.load_video_thread, FREQ)
+        self.eyes_m_d = eyesMoveDetection()
         return layout
 
     def load_video_thread(self, *args):
@@ -47,6 +56,16 @@ class MainApp(App):
         )
         texture.blit_buffer(buffer, colorfmt="bgr", bufferfmt="ubyte")
         self.image.texture = texture
+
+    def capture_thread(self, option: int):
+        t1 = threading.Thread(
+            target=self.eyes_m_d.save_gesture, args=(option, self.frame, FREQ)
+        )
+        t1.start()
+
+    # def on_stop(self):
+    #     self.stop_threads = True
+    #     t1.join()
 
 
 if __name__ == "__main__":

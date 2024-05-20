@@ -1,4 +1,5 @@
 import math
+import time
 import cv2 as cv
 import csv
 import mediapipe as mp
@@ -11,9 +12,10 @@ class eyesMoveDetection:
     ojo_derecho = [157, 158, 159, 160, 161, 163, 144, 145, 153, 154]
     iris_derecho = [468]
     ojo_izquierdo = [384, 385, 386, 387, 388, 390, 373, 374, 380, 381]
-    irs_izquierdo = [473]
+    iris_izquierdo = [473]
     referencias = [67, 297, 127, 264, 205, 425, 168]
-    landmarks = ojo_derecho + ojo_izquierdo + referencias + iris_derecho + irs_izquierdo
+    train_landmarks = ojo_derecho + ojo_izquierdo + referencias
+    full_landmarks = train_landmarks + iris_izquierdo + iris_derecho
 
     def __init__(self):
         self.mp_face_mesh = self.load_mediapipe()
@@ -45,7 +47,7 @@ class eyesMoveDetection:
                 for face_landmarks in results.multi_face_landmarks:
                     points = []
                     for idx, landmark in enumerate(face_landmarks.landmark):
-                        if idx in self.landmarks:
+                        if idx in self.full_landmarks:
                             point = [idx, landmark.x, landmark.y]
                             points.append(point)
                             point = self.landmarks_to_px(
@@ -67,6 +69,11 @@ class eyesMoveDetection:
     def calcular_distancia(self, punto1, punto2):
         dx = (punto1[1] - punto2[1]) ** 2
         dy = (punto1[2] - punto2[2]) ** 2
+        return math.sqrt(dx + dy)
+
+    def calcular_distancia_dos(self, punto1, punto2):
+        dx = (punto1[0] - punto2[0]) ** 2
+        dy = (punto1[1] - punto2[1]) ** 2
         return math.sqrt(dx + dy)
 
     def is_close(self, d1, d2):
@@ -107,9 +114,6 @@ class eyesMoveDetection:
         d_center_right = self.calcular_distancia(center, right)
         d_center_left = self.calcular_distancia(center, left)
         res = self.is_close(d_center_right, d_center_left)
-        if res:
-            pass
-            # print("Puede procesar!")
         return res
 
     def move_slider(self, data):
@@ -132,7 +136,7 @@ class eyesMoveDetection:
 
         return dir
 
-    def save_gesture(self, option: int, landmarks):
+    def save_gesture(self, option: int, frame, freq):
         data = []
         with self.mp_face_mesh.FaceMesh(
             max_num_faces=1,
@@ -140,35 +144,57 @@ class eyesMoveDetection:
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5,
         ) as face_mesh:
-            for i in range(500):
-                frame = self.capture.read()[1]
-                frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            for i in range(10):
+                # To improve performance, optionally mark the image as not writeable to
+                # pass by reference.
                 frame.flags.writeable = False
-                # Detección con Face Mesh
+                frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
                 results = face_mesh.process(frame)
-                # Convertir la imagen de vuelta a BGR para mostrarla
+                # Draw the face mesh annotations on the image.
                 frame.flags.writeable = True
-                # frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+                frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
                 if results.multi_face_landmarks:
                     for face_landmarks in results.multi_face_landmarks:
                         points = []
+                        right_iris = []
+                        left_iris = []
                         for idx, landmark in enumerate(face_landmarks.landmark):
-                            if idx in landmarks:
+                            if idx in self.train_landmarks:
                                 point = landmark.x, landmark.y
                                 points.append(point)
-                        if len(points) == 4:
-                            dist_left_eye = self.calcular_distancia(
-                                punto1=points[0],
-                                punto2=points[1],
+                            if idx in self.iris_derecho:
+                                right_iris = landmark.x, landmark.y
+                            if idx in self.iris_izquierdo:
+                                left_iris = landmark.x, landmark.y
+                    print(points)
+                    distances = []
+                    for p in points:
+                        try:
+                            distances.append(
+                                self.calcular_distancia_dos(punto1=p, punto2=right_iris)
                             )
-                            dist_right_ey = self.calcular_distancia(
-                                punto1=points[2],
-                                punto2=points[3],
+                        except Exception as e:
+                            distances.append(0.0)
+                            print(f"Error: {e.args}")
+                        print(f"distance_right:{distances}")
+                    # distances.append(option)
+                    # data.append(distances)
+                    for p in points:
+                        try:
+                            distances.append(
+                                self.calcular_distancia_dos(punto1=p, punto2=left_iris)
                             )
-                            data.append([dist_left_eye, dist_right_ey, option])
-            self.write_data(data, "eyes_distances")
+                        except Exception as e:
+                            distances = 0
+                            print(f"Error: {e.args}")
+                        print(f"distance_right:{distances}")
+                    distances.append(option)
+                    data.append(distances)
+                    time.sleep(freq)
+            self.write_data(data, "distances")
 
     def write_data(self, data, name):
-        with open(f"{name}.csv", "w", newline="") as file:
+        with open(f"{name}.csv", "a", newline="") as file:
             writer = csv.writer(file, delimiter=",")
             writer.writerows(data)
+            file.close()

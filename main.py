@@ -22,9 +22,11 @@ class MainApp(App):
     stop_threads = False
     can_process = False
     points = []
+    frames = []
     it_moves = False
     direction = ""
     video_res = [640, 480]
+    needs = ["Cleansing", "Hungry", "Sleepy", "Bored", "Happy", "Sad"]
 
     def build(self):
         layout = GridLayout(
@@ -33,15 +35,15 @@ class MainApp(App):
         self.image = Image()
         layout.add_widget(self.image)
         self.carousel = Carousel(direction="bottom")
-        for i in range(6):
-            src = "http://placehold.it/480x270.png&text=slide-%d.png" % i
+        for i in range(len(self.needs)):
+            src = f"http://placehold.it/480x270.png&text={self.needs[i]}"
             image = AsyncImage(source=src, fit_mode="contain")
             self.carousel.add_widget(image)
         # Inicializar el video en hilo
         self.capture = start_camera(
-            video_number=0, frame_rate=20, video_res=self.video_res
+            video_number=0, frame_rate=10, video_res=self.video_res
         )
-        Clock.schedule_interval(self.load_video_thread, 1.0 / 20.0)
+        Clock.schedule_interval(self.load_video_thread, 1.0 / 10.0)
         # Inicializar movimiento de carrusel en hilo
         self.t1 = threading.Thread(target=self.change_carousel_thread)
         self.t1.start()
@@ -49,13 +51,12 @@ class MainApp(App):
         layout.add_widget(self.carousel)
         # Inicializar deteccion de ojos
         self.eyes_m_d = eyesMoveDetection()
-
         return layout
 
     def change_carousel_thread(self, *args):
         print(self.stop_threads)
         while not (MainApp.get_running_app()):
-            pass
+            print("Wait for initialize the camera...")
         while True:
             if self.can_process:
                 direction = self.eyes_m_d.move_slider(self.points)
@@ -75,6 +76,10 @@ class MainApp(App):
         frame, self.points, self.can_process = self.eyes_m_d.get_landmarks_coordinates(
             frame, video_res=self.video_res
         )
+        if len(self.frames) >= 20:
+            self.frames.pop()
+        self.frames.append(frame)
+        print(len(self.frames))
         buffer = flip_camera(frame, 0)
         texture = Texture.create(
             size=(frame.shape[1], frame.shape[0]),
