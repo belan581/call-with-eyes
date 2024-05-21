@@ -34,10 +34,11 @@ class MainApp(App):
             self.image,
         )
         self.buttons_layout = BoxLayout(size_hint_y=0.2)
+        self.btn = []
         for a in eyes_gesture:
-            self.btn = Button(text=a[1])
-            self.btn.bind(on_press=lambda x: self.capture_thread(a[0]))
-            self.buttons_layout.add_widget(self.btn)
+            self.btn.append(Button(text=a[1]))
+            self.btn[-1].bind(on_press=lambda x, a=a: self.capture_thread(a[0]))
+            self.buttons_layout.add_widget(self.btn[-1])
         layout.add_widget(self.buttons_layout)
         # Inicializar el video en hilo
         self.capture = start_camera(
