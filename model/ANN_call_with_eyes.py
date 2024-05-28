@@ -11,8 +11,8 @@ from tensorflow.keras.utils import to_categorical
 
 # Paso 3: Cargar el dataset
 dataset = pd.read_csv("distances.csv")
-X = dataset.iloc[:, :54].values  # Valores de las distancias
-y = dataset.iloc[:, 54].values  # Etiquetas
+X = dataset.iloc[:, :40].values  # Valores de las distancias
+y = dataset.iloc[:, 40].values  # Etiquetas
 
 # Opcional: Normalizar los datos
 scaler = StandardScaler()

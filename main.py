@@ -76,7 +76,7 @@ class MainApp(App):
                 #     self.carousel.load_next()
                 # else:
                 #     print("No hay cambio en mirada")
-                time.sleep(1.0 / 2.0)
+                time.sleep(1)
             if self.stop_threads:
                 print("Se detiene thread en bg")
                 break
