@@ -1,4 +1,3 @@
-import time
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.boxlayout import BoxLayout
@@ -63,10 +62,6 @@ class MainApp(App):
             target=self.eyes_m_d.save_gesture, args=(option, self.frame, FREQ)
         )
         t1.start()
-
-    # def on_stop(self):
-    #     self.stop_threads = True
-    #     t1.join()
 
 
 if __name__ == "__main__":

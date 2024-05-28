@@ -23,6 +23,8 @@ class MainApp(App):
     can_process = False
     points = []
     frames = []
+    right_iris = any
+    left_iris = any
     it_moves = False
     direction = ""
     video_res = [640, 480]
@@ -59,27 +61,31 @@ class MainApp(App):
             print("Wait for initialize the camera...")
         while True:
             if self.can_process:
-                direction = self.eyes_m_d.move_slider(self.points)
-                if direction == "up":
-                    self.carousel.load_previous()
-                elif direction == "down":
-                    self.carousel.load_next()
-                else:
-                    print("No hay cambio en mirada")
-                time.sleep(2)
+                gesto = self.eyes_m_d.compute_gesture(
+                    self.points, self.right_iris, self.left_iris
+                )
+                print(gesto)
+                # if len(self.frames) >= 20:
+                #     self.frames.pop()
+                # self.frames.append(frame)
+                # print(len(self.frames))
+                # direction = self.eyes_m_d.move_slider(self.points)
+                # if direction == "up":
+                #     self.carousel.load_previous()
+                # elif direction == "down":
+                #     self.carousel.load_next()
+                # else:
+                #     print("No hay cambio en mirada")
+                time.sleep(1.0 / 2.0)
             if self.stop_threads:
                 print("Se detiene thread en bg")
                 break
 
     def load_video_thread(self, *args):
         ret, frame = self.capture.read()
-        frame, self.points, self.can_process = self.eyes_m_d.get_landmarks_coordinates(
-            frame, video_res=self.video_res
+        frame, self.points, self.can_process, self.right_iris, self.left_iris = (
+            self.eyes_m_d.get_landmarks_coordinates(frame, video_res=self.video_res)
         )
-        if len(self.frames) >= 20:
-            self.frames.pop()
-        self.frames.append(frame)
-        print(len(self.frames))
         buffer = flip_camera(frame, 0)
         texture = Texture.create(
             size=(frame.shape[1], frame.shape[0]),
