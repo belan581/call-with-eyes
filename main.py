@@ -13,6 +13,7 @@ from kivy.graphics.texture import Texture
 from kivy.clock import Clock
 import threading
 import time
+import statistics as st
 
 from tools import start_camera, flip_camera
 from eyes_move_detection import eyesMoveDetection
@@ -22,7 +23,7 @@ class MainApp(App):
     stop_threads = False
     can_process = False
     points = []
-    frames = []
+    gestures = []
     right_iris = any
     left_iris = any
     it_moves = False
@@ -37,8 +38,8 @@ class MainApp(App):
         self.image = Image()
         layout.add_widget(self.image)
         self.carousel = Carousel(direction="bottom")
-        for i in range(len(self.needs)):
-            src = f"http://placehold.it/480x270.png&text={self.needs[i]}"
+        for i in range(5):
+            src = f"images/image{i+1}.png"
             image = AsyncImage(source=src, fit_mode="contain")
             self.carousel.add_widget(image)
         # Inicializar el video en hilo
@@ -64,19 +65,22 @@ class MainApp(App):
                 gesto = self.eyes_m_d.compute_gesture(
                     self.points, self.right_iris, self.left_iris
                 )
-                print(gesto)
-                # if len(self.frames) >= 20:
-                #     self.frames.pop()
-                # self.frames.append(frame)
-                # print(len(self.frames))
-                # direction = self.eyes_m_d.move_slider(self.points)
-                # if direction == "up":
-                #     self.carousel.load_previous()
-                # elif direction == "down":
-                #     self.carousel.load_next()
-                # else:
-                #     print("No hay cambio en mirada")
-                time.sleep(1)
+                self.gestures.append(gesto)
+                if len(self.gestures) >= 20:
+                    self.gestures.pop(0)
+                mode = st.mode(self.gestures)
+
+                if mode == 0:
+                    self.carousel.load_next()
+                    print("Carga siguiente")
+                elif mode == 1:
+                    self.carousel.load_previous()
+                    print("Carga anterior")
+                elif mode == 2:
+                    print(f"Accion: {self.carousel.index}")
+                else:
+                    print("No hay cambio en mirada")
+                time.sleep(1 / 5)
             if self.stop_threads:
                 print("Se detiene thread en bg")
                 break
