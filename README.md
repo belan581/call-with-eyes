@@ -34,15 +34,16 @@ For Windows users
 
 ```
 1. Open the command prompt.
-2. Navigate to the project directory.
-3. Create the virtual environment: python -m venv venv
-4. Activate the virtual environment: venv\Scripts\activate.bat
-5. Run the command: pip install -r requirements.txt
+2. Clone the repository: https://github.com/belan581/call-with-eyes.git
+3. Navigate to the project directory.
+4. Create the virtual environment: python -m venv venv
+5. Activate the virtual environment: venv\Scripts\activate.bat
+6. Run the command: pip install -r requirements.txt
 ```
 
 
 ## Usage <a name = "usage"></a>
 
 * Run the command: python main.py for running the program.
-* OR
 * Run the command: python get_data_for_train.py for running the program that will capture the data for the neural network.
+* Run the command python ANN_call_with_eyes.py for training the neural network.

@@ -15,18 +15,19 @@ from tensorflow.keras.models import load_model
 
 class eyesMoveDetection:
 
-    # definir los puntos a analizar
-    ojo_derecho = [157, 158, 159, 160, 161, 163, 144, 145, 153, 154]
+    # Interest points
+    # right_eye = [157, 158, 159, 160, 161, 163, 144, 145, 153, 154, 155, 246, 33, 133]
+    right_eye = [157, 158, 159, 160, 161, 163, 144, 145, 153, 154]
     iris_derecho = [468]
-    ojo_izquierdo = [384, 385, 386, 387, 388, 390, 373, 374, 380, 381]
+    left_eye = [384, 385, 386, 387, 388, 390, 373, 374, 380, 381]
     iris_izquierdo = [473]
-    referencias = [67, 297, 127, 264, 205, 425, 168]
-    train_landmarks = ojo_derecho + ojo_izquierdo
+    references = [67, 297, 127, 264, 205, 425, 168]
+    train_landmarks = right_eye + left_eye
     full_landmarks = train_landmarks + iris_izquierdo + iris_derecho
-    # Cargar el modelo desde el archivo
+    # Load de model
     model = load_model("model/modelo_call_with_eyes.h5")
 
-    # Cargar el scaler
+    # Load the scaler
     scaler = joblib.load("model/scaler_entrenamiento.pkl")
 
     def __init__(self):
@@ -67,17 +68,7 @@ class eyesMoveDetection:
                                 landmark, video_res[0], video_res[1]
                             )
                             cv.circle(frame, point, 2, (0, 255, 0), -1)
-                            # Colocar la etiqueta del número de punto
-                            cv.putText(
-                                frame,
-                                str(idx),
-                                point,
-                                cv.FONT_HERSHEY_SIMPLEX,
-                                0.3,
-                                (255, 255, 255),
-                                1,
-                            )
-                        if idx in self.referencias:
+                        if idx in self.references:
                             ref_point = [idx, landmark.x, landmark.y]
                             ref_points.append(ref_point)
                         if idx in self.iris_derecho:

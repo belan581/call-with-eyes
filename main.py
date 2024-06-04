@@ -39,7 +39,7 @@ class MainApp(App):
         layout.add_widget(self.image)
         self.carousel = Carousel(direction="bottom")
         for i in range(5):
-            src = f"images/image{i+1}.png"
+            src = f"images/image{i+1}.jpg"
             image = AsyncImage(source=src, fit_mode="contain")
             self.carousel.add_widget(image)
         # Inicializar el video en hilo
@@ -66,7 +66,7 @@ class MainApp(App):
                     self.points, self.right_iris, self.left_iris
                 )
                 self.gestures.append(gesto)
-                if len(self.gestures) >= 20:
+                if len(self.gestures) >= 10:
                     self.gestures.pop(0)
                 mode = st.mode(self.gestures)
 
@@ -77,7 +77,7 @@ class MainApp(App):
                     self.carousel.load_previous()
                     print("Carga anterior")
                 elif mode == 2:
-                    print(f"Accion: {self.carousel.index}")
+                    print(f"Accion: {self.carousel.index + 1}")
                 else:
                     print("No hay cambio en mirada")
                 time.sleep(1 / 5)
