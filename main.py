@@ -14,6 +14,7 @@ from kivy.clock import Clock
 import threading
 import time
 import statistics as st
+import winsound
 
 from tools import start_camera, flip_camera
 from eyes_move_detection import eyesMoveDetection
@@ -26,7 +27,7 @@ class MainApp(App):
     gestures = []
     right_iris = any
     left_iris = any
-    it_moves = False
+    counter = 0
     direction = ""
     video_res = [640, 480]
     needs = ["Cleansing", "Hungry", "Sleepy", "Bored", "Happy", "Sad"]
@@ -37,7 +38,7 @@ class MainApp(App):
         )
         self.image = Image()
         layout.add_widget(self.image)
-        self.carousel = Carousel(direction="bottom")
+        self.carousel = Carousel(direction="bottom", loop=True)
         for i in range(5):
             src = f"images/image{i+1}.jpg"
             image = AsyncImage(source=src, fit_mode="contain")
@@ -78,6 +79,7 @@ class MainApp(App):
                     print("Carga anterior")
                 elif mode == 2:
                     print(f"Accion: {self.carousel.index + 1}")
+                    winsound.PlaySound("*", winsound.SND_ALIAS)
                 else:
                     print("No hay cambio en mirada")
                 time.sleep(1 / 5)
