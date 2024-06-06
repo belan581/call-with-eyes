@@ -6,6 +6,7 @@ from kivy.uix.image import Image
 from kivymd.app import App
 from kivymd.uix.gridlayout import GridLayout
 import threading
+import cv2 as cv
 
 from eyes_move_detection import eyesMoveDetection
 from tools import flip_camera, start_camera
@@ -17,7 +18,11 @@ eyes_gesture = [
     (3, "no_action"),
 ]
 
+WIDTH = 640
+HEIGHT = 480
 FREQ = 1.0 / 20.0
+X1 = WIDTH / 2
+Y1 = HEIGHT / 2
 
 
 class MainApp(App):
@@ -41,7 +46,7 @@ class MainApp(App):
         layout.add_widget(self.buttons_layout)
         # Inicializar el video en hilo
         self.capture = start_camera(
-            video_number=0, frame_rate=20, video_res=[1280, 720]
+            video_number=0, frame_rate=20, video_res=[WIDTH, HEIGHT]
         )
         Clock.schedule_interval(self.load_video_thread, FREQ)
         self.eyes_m_d = eyesMoveDetection()
@@ -49,7 +54,23 @@ class MainApp(App):
 
     def load_video_thread(self, *args):
         ret, self.frame = self.capture.read()
-        buffer = flip_camera(self.frame, 0)
+        # buffer = flip_camera(self.frame, 3)
+        buffer = self.frame
+        # cv.line(
+        #     buffer,
+        #     (0, 240),
+        #     (640, 240),
+        #     (0, 255, 0),
+        #     thickness=2,
+        # )
+        # cv.line(
+        #     buffer,
+        #     (320, 0),
+        #     (320, 480),
+        #     (0, 255, 0),
+        #     thickness=2,
+        # )
+        buffer = cv.flip(buffer, 0).tobytes()
         texture = Texture.create(
             size=(self.frame.shape[1], self.frame.shape[0]),
             colorfmt="bgr",

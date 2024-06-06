@@ -63,13 +63,15 @@ class MainApp(App):
             print("Wait for initialize the camera...")
         while True:
             if self.can_process:
+                mode = 3
                 gesto = self.eyes_m_d.compute_gesture(
                     self.points, self.right_iris, self.left_iris
                 )
+
                 self.gestures.append(gesto)
-                if len(self.gestures) >= 10:
-                    self.gestures.pop(0)
-                mode = st.mode(self.gestures)
+                if len(self.gestures) == 10:
+                    mode = st.mode(self.gestures)
+                    self.gestures.clear()
 
                 if mode == 0:
                     self.carousel.load_next()
@@ -82,7 +84,7 @@ class MainApp(App):
                     winsound.PlaySound("*", winsound.SND_ALIAS)
                 else:
                     print("No hay cambio en mirada")
-                time.sleep(1 / 5)
+                # time.sleep(1 / 5)
             if self.stop_threads:
                 print("Se detiene thread en bg")
                 break
