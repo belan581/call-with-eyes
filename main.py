@@ -6,6 +6,7 @@ Config.set("graphics", "height", "720")
 
 from kivymd.app import App
 from kivymd.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.uix.carousel import Carousel
 from kivy.uix.image import AsyncImage
@@ -30,17 +31,28 @@ class MainApp(App):
     counter = 0
     direction = ""
     video_res = [640, 480]
-    needs = ["Cleansing", "Hungry", "Sleepy", "Bored", "Happy", "Sad"]
+    needs = [0, 1, 2, 3, 4]
 
     def build(self):
         layout = GridLayout(
             cols=2,
         )
+        boxLayout = BoxLayout(orientation="vertical")
         self.image = Image()
-        layout.add_widget(self.image)
+        self.image_up = Image(
+            source="images/image4.jpg",
+            size_hint_x=0.4,
+            allow_stretch=True,
+        )
+        self.image_down = Image(
+            source="images/image1.jpg",
+            size_hint_x=0.4,
+            allow_stretch=True,
+        )
+        # layout.add_widget(self.image)
         self.carousel = Carousel(direction="bottom", loop=True)
         for i in range(5):
-            src = f"images/image{i+1}.jpg"
+            src = f"images/image{i}.jpg"
             image = AsyncImage(source=src, fit_mode="contain")
             self.carousel.add_widget(image)
         # Inicializar el video en hilo
@@ -51,13 +63,26 @@ class MainApp(App):
         # Inicializar movimiento de carrusel en hilo
         self.t1 = threading.Thread(target=self.change_carousel_thread)
         self.t1.start()
+        # Add the widgets
+        layout.add_widget(self.image)
+        boxLayout.add_widget(self.image_up)
+        boxLayout.add_widget(self.carousel)
+        boxLayout.add_widget(self.image_down)
+        layout.add_widget(boxLayout)
 
-        layout.add_widget(self.carousel)
         # Inicializar deteccion de ojos
         self.eyes_m_d = eyesMoveDetection()
         return layout
 
     def change_carousel_thread(self, *args):
+
+        def change_options(index: int):
+            self.image_up.source = f"images/image{self.needs[index - 1]}.jpg"
+            if index == 4:
+                self.image_down.source = f"images/image{0}.jpg"
+            else:
+                self.image_down.source = f"images/image{self.needs[index + 1]}.jpg"
+
         print(self.stop_threads)
         while not (MainApp.get_running_app()):
             print("Wait for initialize the camera...")
@@ -74,13 +99,15 @@ class MainApp(App):
                     self.gestures.clear()
 
                 if mode == 0:
+                    change_options(self.carousel.index)
                     self.carousel.load_next()
                     print("Carga siguiente")
                 elif mode == 1:
+                    change_options(self.carousel.index)
                     self.carousel.load_previous()
                     print("Carga anterior")
                 elif mode == 2:
-                    print(f"Accion: {self.carousel.index + 1}")
+                    print(f"Accion: {self.carousel.index}")
                     winsound.PlaySound("*", winsound.SND_ALIAS)
                 else:
                     print("No hay cambio en mirada")
