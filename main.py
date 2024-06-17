@@ -94,7 +94,7 @@ class MainApp(App):
                 )
 
                 self.gestures.append(gesto)
-                if len(self.gestures) == 10:
+                if len(self.gestures) == 17:
                     mode = st.mode(self.gestures)
                     self.gestures.clear()
 
@@ -121,7 +121,7 @@ class MainApp(App):
         frame, self.points, self.can_process, self.right_iris, self.left_iris = (
             self.eyes_m_d.get_landmarks_coordinates(frame, video_res=self.video_res)
         )
-        buffer = flip_camera(frame, 0)
+        buffer = flip_camera(frame, -1)
         texture = Texture.create(
             size=(frame.shape[1], frame.shape[0]),
             colorfmt="bgr",
