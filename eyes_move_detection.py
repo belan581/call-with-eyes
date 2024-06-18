@@ -76,13 +76,15 @@ class eyesMoveDetection:
                         if idx in self.iris_izquierdo:
                             left_iris = idx, landmark.x, landmark.y
 
-            return (
-                frame,
-                points,
-                self.can_process(points + ref_points),
-                right_iris,
-                left_iris,
-            )
+                return (
+                    frame,
+                    points,
+                    self.can_process(points + ref_points),
+                    right_iris,
+                    left_iris,
+                )
+            else:
+                return frame, [], False, [], []
 
     def calcular_distancia(self, punto1, punto2):
         dx = (punto1[1] - punto2[1]) ** 2

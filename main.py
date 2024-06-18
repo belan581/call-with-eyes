@@ -7,6 +7,7 @@ Config.set("graphics", "height", "720")
 from kivymd.app import App
 from kivymd.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.carousel import Carousel
 from kivy.uix.image import AsyncImage
@@ -32,12 +33,22 @@ class MainApp(App):
     direction = ""
     video_res = [640, 480]
     needs = [0, 1, 2, 3, 4]
+    text = [
+        "I am hungry",
+        "I need to use bathroom",
+        "I need medical attention",
+        "I am uncomfortable",
+        "I am fine",
+    ]
 
     def build(self):
         layout = GridLayout(
             cols=2,
         )
-        boxLayout = BoxLayout(orientation="vertical")
+        optionsLayout = BoxLayout(orientation="vertical")
+        videoLayout = BoxLayout(orientation="vertical")
+        self.label = Label()
+        self.label.text = ""
         self.image = Image()
         self.image_up = Image(
             source="images/image4.jpg",
@@ -49,7 +60,6 @@ class MainApp(App):
             size_hint_x=0.4,
             allow_stretch=True,
         )
-        # layout.add_widget(self.image)
         self.carousel = Carousel(direction="bottom", loop=True)
         for i in range(5):
             src = f"images/image{i}.jpg"
@@ -64,11 +74,13 @@ class MainApp(App):
         self.t1 = threading.Thread(target=self.change_carousel_thread)
         self.t1.start()
         # Add the widgets
-        layout.add_widget(self.image)
-        boxLayout.add_widget(self.image_up)
-        boxLayout.add_widget(self.carousel)
-        boxLayout.add_widget(self.image_down)
-        layout.add_widget(boxLayout)
+        videoLayout.add_widget(self.label)
+        videoLayout.add_widget(self.image)
+        layout.add_widget(videoLayout)
+        optionsLayout.add_widget(self.image_up)
+        optionsLayout.add_widget(self.carousel)
+        optionsLayout.add_widget(self.image_down)
+        layout.add_widget(optionsLayout)
 
         # Inicializar deteccion de ojos
         self.eyes_m_d = eyesMoveDetection()
@@ -99,15 +111,16 @@ class MainApp(App):
                     self.gestures.clear()
 
                 if mode == 0:
-                    change_options(self.carousel.index)
                     self.carousel.load_next()
-                    print("Carga siguiente")
+                    time.sleep(1 / 10)
+                    change_options(gesto)
                 elif mode == 1:
-                    change_options(self.carousel.index)
                     self.carousel.load_previous()
-                    print("Carga anterior")
+                    time.sleep(1 / 10)
+                    change_options(gesto)
                 elif mode == 2:
                     print(f"Accion: {self.carousel.index}")
+                    self.label.text = self.text[gesto]
                     winsound.PlaySound("*", winsound.SND_ALIAS)
                 else:
                     print("No hay cambio en mirada")
@@ -119,7 +132,10 @@ class MainApp(App):
     def load_video_thread(self, *args):
         ret, frame = self.capture.read()
         frame, self.points, self.can_process, self.right_iris, self.left_iris = (
-            self.eyes_m_d.get_landmarks_coordinates(frame, video_res=self.video_res)
+            self.eyes_m_d.get_landmarks_coordinates(
+                frame,
+                video_res=self.video_res,
+            )
         )
         buffer = flip_camera(frame, -1)
         texture = Texture.create(
