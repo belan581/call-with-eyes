@@ -47,20 +47,26 @@ class MainApp(App):
         )
         optionsLayout = BoxLayout(orientation="vertical")
         videoLayout = BoxLayout(orientation="vertical")
-        self.label = Label()
+        self.label = Label(size_hint_y=2.0)
         self.label.text = ""
-        self.image = Image()
+        self.image = Image(size_hint_y=8.0)
         self.image_up = Image(
             source="images/image4.jpg",
             size_hint_x=0.4,
             allow_stretch=True,
+            size_hint_y=2.0,
         )
         self.image_down = Image(
             source="images/image1.jpg",
             size_hint_x=0.4,
             allow_stretch=True,
+            size_hint_y=2.0,
         )
-        self.carousel = Carousel(direction="bottom", loop=True)
+        self.carousel = Carousel(
+            direction="bottom",
+            loop=True,
+            size_hint_y=6.0,
+        )
         for i in range(5):
             src = f"images/image{i}.jpg"
             image = AsyncImage(source=src, fit_mode="contain")

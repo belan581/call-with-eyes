@@ -22,6 +22,7 @@ class eyesMoveDetection:
     left_eye = [384, 385, 386, 387, 388, 390, 373, 374, 380, 381]
     iris_izquierdo = [473]
     references = [67, 297, 127, 264, 205, 425, 168]
+    nose = [4]
     train_landmarks = right_eye + left_eye
     full_landmarks = train_landmarks + iris_izquierdo + iris_derecho
     # Load de model
@@ -71,10 +72,28 @@ class eyesMoveDetection:
                         if idx in self.references:
                             ref_point = [idx, landmark.x, landmark.y]
                             ref_points.append(ref_point)
+                            ref_point = self.landmarks_to_px(
+                                landmark, video_res[0], video_res[1]
+                            )
+                            cv.circle(frame, ref_point, 2, (0, 255, 0), -1)
                         if idx in self.iris_derecho:
                             right_iris = idx, landmark.x, landmark.y
+                            righ_iris_point = self.landmarks_to_px(
+                                landmark, video_res[0], video_res[1]
+                            )
+                            cv.circle(frame, righ_iris_point, 2, (0, 255, 0), -1)
                         if idx in self.iris_izquierdo:
                             left_iris = idx, landmark.x, landmark.y
+                            left_iris_point = self.landmarks_to_px(
+                                landmark, video_res[0], video_res[1]
+                            )
+                            cv.circle(frame, left_iris_point, 2, (0, 255, 0), -1)
+                        if idx in self.nose:
+
+                            nose_point = self.landmarks_to_px(
+                                landmark, video_res[0], video_res[1]
+                            )
+                            cv.circle(frame, nose_point, 2, (0, 255, 0), -1)
 
                 return (
                     frame,
